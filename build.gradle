@@ -1,0 +1,23 @@
+plugins {
+    id 'idea'
+    id 'org.ajoberstar.grgit'
+    id 'com.norvax.java-repositories' apply false
+}
+
+String rootVersion = hasProperty('versionOverride') ? versionOverride : 'SNAPSHOT'
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'com.norvax.java-repositories'
+
+    group = 'com.norvax'
+    version = rootVersion
+
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+wrapper {
+    gradleVersion = '7.4.2'
+    distributionType = Wrapper.DistributionType.BIN
+}

@@ -1,0 +1,98 @@
+@Library('jenkins-pipelines') _
+
+def VERSION = utils.BUILD_VERSION
+def SERVICE_NAME = 'unicorns-demo'
+
+pipeline {
+    agent {
+        label 'aws'
+    }
+
+    tools {
+        jdk 'amazon-corretto-jdk-11'
+    }
+
+    stages {
+        stage('Publish') {
+            when {
+                branch 'main'
+            }
+
+            steps {
+                withGradleCache {
+                    sh "./gradlew assemble generateSBOM --info"
+                }
+
+                dependencyTrackPublish(
+                    projectName: SERVICE_NAME,
+                    projectVersion: VERSION,
+                    sbomPath: 'unicorns-server/build/reports/bom.json'
+                )
+
+                script {
+                    currentBuild.description = VERSION
+                }
+            }
+        }
+
+        stage('QA') {
+            when {
+                branch 'main'
+            }
+
+            input {
+                message 'Deploy to QA?'
+            }
+
+            steps {
+                echo "QA No-operation"
+
+                dependencyTrackActivate(
+                    projectName: SERVICE_NAME,
+                    projectVersion: VERSION,
+                    environment: 'qa'
+                )
+            }
+        }
+
+        stage('UAT') {
+            when {
+                branch 'main'
+            }
+
+            input {
+                message 'Deploy to UAT?'
+            }
+
+            steps {
+                echo "UAT No-operation"
+
+                dependencyTrackActivate(
+                    projectName: SERVICE_NAME,
+                    projectVersion: VERSION,
+                    environment: 'uat'
+                )
+            }
+        }
+
+        stage('PROD') {
+            when {
+                branch 'main'
+            }
+
+            input {
+                message 'Deploy to PROD?'
+            }
+
+            steps {
+                echo "UAT No-operation"
+
+                dependencyTrackActivate(
+                    projectName: SERVICE_NAME,
+                    projectVersion: VERSION,
+                    environment: 'prod'
+                )
+            }
+        }
+    }
+}

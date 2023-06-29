@@ -1,0 +1,42 @@
+pluginManagement {
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.namespace == 'com.norvax') {
+                useModule("com.gohealth:gohealth-gradle-plugin:$gohealthGradlePluginVersion")
+            }
+        }
+    }
+    repositories {
+        maven {
+            url(nexusUrl)
+        }
+    }
+    plugins {
+        id 'org.springframework.boot' version springBootVersion
+        id 'org.ajoberstar.grgit' version grgitPluginVersion
+        id 'io.spring.dependency-management' version springDependencyManagementPluginVersion
+    }
+}
+
+plugins {
+    id 'com.norvax.aws-s3-build-cache'
+}
+
+rootProject.name='unicorns'
+
+fileTree('.') {
+    include '**/build.gradle'
+    exclude 'build.gradle' // Exclude the root build file.
+    exclude '**/build/**' // Exclude build folders.
+}.collect {
+    relativePath(it.parent).replace(File.separator, ':')
+}.each {
+    include(it)
+}
+
+buildCache {
+    remote(com.norvax.gradle.plugins.cache.AwsS3BuildCache)
+    local {
+        enabled = false
+    }
+}
